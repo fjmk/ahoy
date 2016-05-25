@@ -26,9 +26,6 @@ var globalFlags = []cli.Flag{
 		Name:  "version",
 		Usage: "print the version",
 	},
-	cli.BoolFlag{
-		Name: "generate-bash-completion",
-	},
 }
 
 func flagSet(name string, flags []cli.Flag) *flag.FlagSet {

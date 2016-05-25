@@ -35,7 +35,6 @@ var sourcedir string
 var sourcefile string
 var args []string
 var verbose bool
-var bashCompletion bool
 
 func logger(errType string, text string) {
 	if (errType == "error") || (errType == "fatal") || (verbose == true) {
@@ -211,7 +210,6 @@ func addDefaultCommands(commands []cli.Command) []cli.Command {
 //TODO Move these to flag.go?
 func init() {
 	flag.StringVar(&sourcefile, "f", "", "specify the sourcefile")
-	flag.BoolVar(&bashCompletion, "generate-bash-completion", false, "")
 	flag.BoolVar(&verbose, "verbose", false, "")
 }
 
@@ -249,6 +247,7 @@ func main() {
 		}
 	}
 
+	fmt.Println(cli.AppHelpTemplate)
 	cli.AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 USAGE:
@@ -260,7 +259,7 @@ AUTHOR(S):
 COMMANDS:
 {{range .Commands}}{{if not .HideHelp}}   {{join .Names ", "}}{{ "\t" }}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{end}}{{if .Flags}}
 GLOBAL OPTIONS:
-   {{range .Flags}}{{.}}
+   {{range .VisibleFlags}}{{.}}
    {{end}}{{end}}{{if .Copyright }}
 COPYRIGHT:
    {{.Copyright}}
