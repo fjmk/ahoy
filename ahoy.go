@@ -138,9 +138,10 @@ func getCommands(config Config) []cli.Command {
 		}
 
 		if cmd.Cmd != "" {
-			newCmd.Action = func(c *cli.Context) {
+			newCmd.Action = func(c *cli.Context) error {
 				args = c.Args()
-				runCommand(cmdName, cmd.Cmd)
+				return runCommand(cmdName, cmd.Cmd)
+
 			}
 		}
 
@@ -155,7 +156,7 @@ func getCommands(config Config) []cli.Command {
 	return exportCmds
 }
 
-func runCommand(name string, c string) {
+func runCommand(name string, c string) error {
 
 	cReplace := strings.Replace(c, "{{args}}", strings.Join(args, " "), -1)
 
@@ -169,10 +170,7 @@ func runCommand(name string, c string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		fmt.Fprintln(os.Stderr)
-		os.Exit(1)
-	}
+	return cmd.Run()
 }
 
 func addDefaultCommands(commands []cli.Command) []cli.Command {
@@ -180,10 +178,10 @@ func addDefaultCommands(commands []cli.Command) []cli.Command {
 	defaultInitCmd := cli.Command{
 		Name:  "init",
 		Usage: "Initialize a new .ahoy.yml config file in the current directory.",
-		Action: func(c *cli.Context) {
+		Action: func(c *cli.Context) error {
 			// Grab the URL or use a default for the initial ahoy file.
 			// Allows users to define their own files to call to init.
-			var wgetUrl = "https://raw.githubusercontent.com/devinci-code/ahoy/master/examples/examples.ahoy.yml"
+			var wgetUrl = "https://raw.githubusercontent.com/fjmk/ahoy/master/examples/examples.ahoy.yml"
 			if len(c.Args()) > 0 {
 				wgetUrl = c.Args()[0]
 			}
@@ -191,11 +189,11 @@ func addDefaultCommands(commands []cli.Command) []cli.Command {
 			cmd := exec.Command("bash", "-c", grabYaml)
 			cmd.Stdin = os.Stdin
 			cmd.Stderr = os.Stderr
-			if err := cmd.Run(); err != nil {
-				fmt.Fprintln(os.Stderr)
-				os.Exit(1)
-			} else {
+			if err := cmd.Run(); err == nil {
 				fmt.Println("example.ahoy.yml downloaded to the current directory. You can customize it to suit your needs!")
+				return nil
+			} else {
+				return err
 			}
 		},
 	}
@@ -247,7 +245,7 @@ func main() {
 		}
 	}
 
-	fmt.Println(cli.AppHelpTemplate)
+	//fmt.Println(cli.AppHelpTemplate)
 	cli.AppHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 USAGE:
