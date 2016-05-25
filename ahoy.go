@@ -77,12 +77,16 @@ func getConfigPath(sourcefile string) (string, error) {
 
 func getConfig(sourcefile string) (Config, error) {
 
+	var config Config
 	yamlFile, err := ioutil.ReadFile(sourcefile)
 	if err != nil {
-		logger("fatal", "An ahoy config file couldn't be found in your path. You can create an example one by using 'ahoy init'.")
+		if len(os.Args) > 1 && os.Args[1] == "init" {
+			return config, nil
+		} else {
+			logger("fatal", "An ahoy config file couldn't be found in your path. You can create an example one by using 'ahoy init'.")
+		}
 	}
 
-	var config Config
 	// Extract the yaml file into the config varaible.
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
